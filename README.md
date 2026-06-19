@@ -29,7 +29,7 @@
 
 ---
 
-> **Separate experiment:** [`factory-genius/`](factory-genius/) — maintenance copilot · published at [`github.com/vgandhi1/factory-genius`](https://github.com/vgandhi1/factory-genius) · **not** part of the three-repo integration story.
+> **Separate experiment:** [`factory-genius`](https://github.com/vgandhi1/factory-genius) — maintenance copilot in its own repo · **not** part of the three-repo integration story.
 
 Each sub-repo is an **independent git repository** and follows [governance standards](../governance/standards/COMPLIANCE.md) on its own.
 

@@ -1,7 +1,3 @@
-# factory-genius stays a separate published repo (vgandhi1/factory-genius) — not part
-# of the integration story; kept here as a working copy but excluded from this monorepo.
-/factory-genius/
-
 # --- Monorepo: factory-digital-twin / factory-ops / visionguard folded in 2026-06-19 ---
 # Each sub-dir keeps its own nested .gitignore (git honors those); the lines below are
 # a backstop for heavy / generated / regenerable artifacts across the three.
