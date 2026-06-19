@@ -1,0 +1,57 @@
+# Digital Twin simulation parameters. Tune to shape the generated stream.
+seed: 42
+
+# Wall-clock seconds the sim sleeps per simulated minute. 0 = run flat-out
+# (batch mode, for seeding data). >0 = real-time-ish demo.
+realtime_factor: 0.0
+
+# Simulated horizon.
+shift_hours: 24
+shift_length_hours: 8          # 3 shifts/day for handoff summaries
+
+lines:
+  - id: line-1
+    stations: [line-1-cnc, line-1-assembly, line-1-inspect]
+    product_sku: SKU-A
+    ideal_cycle_time_s: 12.0      # ideal seconds per part
+    speed_loss: 1.06              # actual cycle = ideal * this (Performance loss)
+    cycle_jitter_s: 2.0           # std-dev of actual cycle time
+    base_scrap_rate: 0.03         # fraction scrapped under nominal state
+    worn_scrap_rate: 0.12         # fraction scrapped when tool_worn
+    tool_wear_after_parts: 400    # parts before tool degrades -> worn
+
+  - id: line-2
+    stations: [line-2-press, line-2-weld, line-2-inspect]
+    product_sku: SKU-B
+    ideal_cycle_time_s: 18.0
+    speed_loss: 1.09
+    cycle_jitter_s: 2.5
+    base_scrap_rate: 0.05
+    worn_scrap_rate: 0.15
+    tool_wear_after_parts: 300
+
+downtime:
+  # Mean minutes between unplanned downtime onsets (per line). Exponential.
+  mttf_minutes: 180
+  categories:               # weights + duration (minutes, lognormal-ish)
+    mechanical:  { weight: 4, min: 5,  max: 30 }
+    electrical:  { weight: 2, min: 3,  max: 18 }
+    material:    { weight: 3, min: 2,  max: 12 }
+    quality:     { weight: 1, min: 5,  max: 15 }
+  setup_minutes: { min: 4, max: 10 }   # planned changeover between orders
+
+  # Cascading: when a source line has a *long* unplanned stop (>= min_source_minutes),
+  # the downstream line backs up (material starvation) after delay_minutes, with
+  # probability prob, for backup_factor * source-stop duration. Short stops don't
+  # propagate.
+  cascade:
+    line-1: { affects: line-2, delay_minutes: 10, prob: 0.8,
+              backup_factor: 0.6, min_source_minutes: 10 }
+
+order_qty: { min: 80, max: 150 }
+
+defect_types:        # distribution of defect_type when a part is scrapped
+  surface: 5
+  dimension: 3
+  color: 1
+  missing_component: 2

@@ -1,0 +1,113 @@
+# Full FactoryOps stack:
+#   Digital Twin -> NATS -> gateway (Go) -> ClickHouse
+#                                              |
+#                          PostgreSQL+pgvector (knowledge base)
+#                                              |
+#                              FastAPI (metrics + Copilot + shift) -> Next.js UI
+#
+#   docker compose up --build
+#   Dashboard:  http://localhost:3000      API docs: http://localhost:8000/docs
+#   Set ANTHROPIC_API_KEY in your env for the real Claude Copilot (else fallback).
+services:
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js", "-m", "8222"]
+    ports: ["4222:4222", "8222:8222"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      # open the default user beyond loopback so the gateway can connect
+      CLICKHOUSE_SKIP_USER_SETUP: "1"
+    ports:
+      - "8123:8123"   # HTTP
+      - "9000:9000"   # native
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  gateway:
+    build: ./gateway
+    depends_on:
+      nats:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    environment:
+      NATS_URL: nats://nats:4222
+      CLICKHOUSE_ADDR: clickhouse:9000
+      CLICKHOUSE_DB: factory
+      GATEWAY_BATCH_SIZE: "500"
+      GATEWAY_FLUSH_MS: "1000"
+
+  # The Digital Twin, built from the sibling repo, feeding synthetic events.
+  # Also depends on the gateway: NATS core is at-most-once, so the gateway must be
+  # subscribed before the Twin's burst. service_started doesn't guarantee the
+  # subscription is live, but it removes the worst of the startup race; --realtime
+  # pacing covers the remaining gap. (Durable fix = JetStream consumer.)
+  twin:
+    build: ../factory-digital-twin
+    depends_on:
+      nats:
+        condition: service_healthy
+      gateway:
+        condition: service_started
+    command: ["python", "run.py", "--nats", "nats://nats:4222", "--realtime"]
+
+  # Knowledge base for the Copilot's RAG layer. Seed SQL is applied on first
+  # boot via the init dir (alphabetical: schema, then incidents, then procedures).
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: factory
+      POSTGRES_PASSWORD: factory
+      POSTGRES_DB: factory_kb
+    ports: ["5432:5432"]
+    volumes:
+      - ./knowledge-base/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./knowledge-base/seed_data/incidents.sql:/docker-entrypoint-initdb.d/02-incidents.sql:ro
+      - ./knowledge-base/seed_data/procedures.sql:/docker-entrypoint-initdb.d/03-procedures.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factory -d factory_kb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # FastAPI reasoning layer: dashboard metrics + Copilot + shift summary.
+  api:
+    build: ./api
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_DB: factory
+      POSTGRES_DSN: postgresql://factory:factory@postgres:5432/factory_kb
+      # Optional: real Claude Copilot. Falls back to deterministic responder if unset.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ports: ["8010:8000"]
+
+  # Next.js dashboard. NEXT_PUBLIC_API_URL is the browser-reachable API address.
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8010
+    depends_on:
+      - api
+    ports: ["3000:3000"]
+
+volumes:
+  pgdata:

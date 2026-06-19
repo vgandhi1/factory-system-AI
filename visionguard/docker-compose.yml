@@ -1,0 +1,107 @@
+# VisionGuard AI Quality Inspection — full local stack.
+#
+#   docker compose up --build
+#   Web UI (inspect + trends): http://localhost:3001
+#   Inference API:             http://localhost:8001/docs
+#   MinIO console:             http://localhost:9101  (minioadmin / minioadmin)
+#   MinIO S3 API (host):       http://localhost:9100
+#
+# The inference server boots with a pretrained fallback model until you train +
+# deploy a real one (see model-training/ and retraining-pipeline/). The retrainer
+# is opt-in: `docker compose --profile retrain up retrainer`.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: visionguard
+      POSTGRES_PASSWORD: visionguard
+      POSTGRES_DB: visionguard
+    # Host port 5433 (not 5432) so this stack can run alongside FactoryOps, which
+    # binds host 5432. In-cluster DSNs use the service name `postgres:5432`.
+    ports: ["5433:5432"]
+    volumes:
+      - ./postgres/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - vg_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U visionguard -d visionguard"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    # Host ports 9100/9101 (not 9000/9001) so this stack can run alongside
+    # FactoryOps, whose ClickHouse binds host 9000. In-cluster access uses
+    # `minio:9000`, unchanged.
+    ports: ["9100:9000", "9101:9001"]
+    volumes:
+      - vg_minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Create the 'defects' bucket the Twin's image_refs point at, then exit.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minioadmin minioadmin &&
+      mc mb --ignore-existing local/defects &&
+      echo 'bucket defects ready'"
+
+  inference-server:
+    build: ./inference-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      POSTGRES_DSN: postgresql://visionguard:visionguard@postgres:5432/visionguard
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MODEL_PATH: models/best.pt
+    volumes:
+      - ./inference-server/models:/app/models   # promoted models persist here
+    ports: ["8001:8001"]
+
+  webui:
+    build:
+      context: ./webui
+      args:
+        NEXT_PUBLIC_INFERENCE_URL: http://localhost:8001
+    depends_on:
+      - inference-server
+    ports: ["3001:3001"]
+
+  # Opt-in retraining worker: docker compose --profile retrain up retrainer
+  retrainer:
+    build: ./retraining-pipeline
+    profiles: ["retrain"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      POSTGRES_DSN: postgresql://visionguard:visionguard@postgres:5432/visionguard
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      DEPLOY_DIR: /app/deploy-models
+    volumes:
+      - ./inference-server/models:/app/deploy-models  # deploy target = server's model dir
+
+volumes:
+  vg_pgdata:
+  vg_minio:

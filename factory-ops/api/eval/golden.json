@@ -1,0 +1,30 @@
+{
+  "description": "Golden eval for the FactoryOps Copilot. Each item is scored on (a) required tool(s) being called (grounding in live/historical data) and (b) key terms appearing in the answer. Designed to pass on both the Claude backend and the deterministic fallback. Target: >=80% pass rate.",
+  "cases": [
+    {"q": "What is the OEE of line-1?", "expect_tools": ["get_oee"], "must_include": ["line-1", "oee"]},
+    {"q": "What is the OEE of line-2?", "expect_tools": ["get_oee"], "must_include": ["line-2", "oee"]},
+    {"q": "Give me the OEE for all lines.", "expect_tools": ["get_oee"], "must_include": ["line-1", "line-2"]},
+    {"q": "How is line-1 performing?", "expect_tools": ["get_oee"], "must_include": ["line-1"]},
+    {"q": "What is the availability on line-2?", "expect_tools": ["get_oee"], "must_include": ["line-2"]},
+    {"q": "What is the quality rate on line-1?", "expect_tools": ["get_oee", "get_defects"], "must_include": ["line-1"], "match_any_tool": true},
+    {"q": "Which line is the bottleneck?", "expect_tools": ["get_bottleneck"], "must_include": ["bottleneck", "line-"]},
+    {"q": "What is limiting our throughput?", "expect_tools": ["get_bottleneck"], "must_include": ["line-"]},
+    {"q": "Which station has the most downtime?", "expect_tools": ["get_bottleneck", "get_downtime"], "must_include": ["line-"], "match_any_tool": true},
+    {"q": "How much downtime did line-1 have?", "expect_tools": ["get_downtime"], "must_include": ["line-1"]},
+    {"q": "What is the top downtime cause on line-2?", "expect_tools": ["get_downtime"], "must_include": ["line-2"]},
+    {"q": "How much of our downtime was unplanned?", "expect_tools": ["get_downtime"], "must_include": ["planned"]},
+    {"q": "Break down downtime by category.", "expect_tools": ["get_downtime"], "must_include": ["min"]},
+    {"q": "What defects are we seeing on line-1?", "expect_tools": ["get_defects"], "must_include": ["line-1"]},
+    {"q": "What is the most common defect type?", "expect_tools": ["get_defects"], "must_include": ["defect"]},
+    {"q": "Why is our scrap rate high on line-2?", "expect_tools": ["get_defects", "search_incidents"], "must_include": ["line-2"], "match_any_tool": true},
+    {"q": "Why is line-1 OEE low?", "expect_tools": ["search_incidents"], "must_include": ["line-1"]},
+    {"q": "Why did line-2 go down?", "expect_tools": ["search_incidents"], "must_include": ["line-2"]},
+    {"q": "What is the root cause of the line-1 mechanical stops?", "expect_tools": ["search_incidents"], "must_include": ["line-1"]},
+    {"q": "Have we seen surface defects on line-1 before?", "expect_tools": ["get_defects", "search_incidents"], "must_include": ["line-1"], "match_any_tool": true},
+    {"q": "What is the reason for the cascade from line-1 to line-2?", "expect_tools": ["search_incidents"], "must_include": ["line-"]},
+    {"q": "Why is performance low on line-1?", "expect_tools": ["search_incidents"], "must_include": ["line-1"]},
+    {"q": "What downtime did we have overall?", "expect_tools": ["get_downtime"], "must_include": ["min"]},
+    {"q": "Show me the worst-performing line.", "expect_tools": ["get_bottleneck", "get_oee"], "must_include": ["line-"], "match_any_tool": true},
+    {"q": "What quality issues need attention on line-2?", "expect_tools": ["get_defects"], "must_include": ["line-2"]}
+  ]
+}

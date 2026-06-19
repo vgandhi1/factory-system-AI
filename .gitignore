@@ -1,14 +1,43 @@
-# Independent sub-repos — each is its own git repository, tracked separately.
-# (factory-digital-twin / factory-ops / visionguard have no remote yet;
-#  factory-genius is published standalone. Convert to submodules once all are pushed.)
-/factory-digital-twin/
-/factory-ops/
-/visionguard/
+# factory-genius stays a separate published repo (vgandhi1/factory-genius) — not part
+# of the integration story; kept here as a working copy but excluded from this monorepo.
 /factory-genius/
 
-# Local tooling / caches
-.ruff_cache/
-.claude/settings.local.json
+# --- Monorepo: factory-digital-twin / factory-ops / visionguard folded in 2026-06-19 ---
+# Each sub-dir keeps its own nested .gitignore (git honors those); the lines below are
+# a backstop for heavy / generated / regenerable artifacts across the three.
+
+# Generated data & model artifacts (large, regenerable)
+**/synthetic-images/output/
+**/events.jsonl
+**/model-training/data/
+**/model-training/models/
+**/inference-server/models/*.onnx
+**/inference-server/models/*.pt
+**/runs/
+**/minio-data/
+
+# Python envs / caches
+**/.venv/
+**/venv/
 __pycache__/
 *.pyc
+*.egg-info/
+.ruff_cache/
+
+# Node / Next
+**/node_modules/
+**/.next/
+
+# Go build output
+factory-ops/gateway/gateway
+
+# Secrets — never commit
+**/.env
+**/.env.local
+*.pem
+*.key
+
+# Local tooling / misc
+.claude/settings.local.json
+*.log
 .DS_Store

@@ -1,0 +1,2 @@
+# Optional base-part PNGs. If present, renderers can use them instead of the
+# procedural plate. Empty by default — generation needs no external assets.

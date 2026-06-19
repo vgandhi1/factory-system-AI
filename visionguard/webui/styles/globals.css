@@ -1,0 +1,34 @@
+:root {
+  --bg: #0d1016; --panel: #161a21; --border: #272d38; --text: #e8eaed;
+  --muted: #8b929e; --good: #2ecc71; --warn: #f1c40f; --bad: #e74c3c; --accent: #5b8def;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+nav { display: flex; gap: 20px; padding: 16px 24px; background: var(--panel);
+  border-bottom: 1px solid var(--border); align-items: center; }
+nav .brand { font-weight: 700; margin-right: 12px; }
+main { padding: 24px; max-width: 1000px; margin: 0 auto; }
+h1 { font-size: 22px; margin: 0 0 16px; }
+h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--muted); margin: 24px 0 10px; }
+.card { background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 14px; }
+.kpi { font-size: 30px; font-weight: 700; margin: 4px 0; }
+.kpi.good { color: var(--good); } .kpi.bad { color: var(--bad); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); }
+button { padding: 10px 16px; border: none; border-radius: 8px; background: var(--accent);
+  color: #fff; font-weight: 600; cursor: pointer; }
+button.secondary { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+button:disabled { opacity: .5; cursor: default; }
+input[type="text"], select { padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font-size: 14px; }
+img.heatmap { max-width: 100%; border-radius: 8px; border: 1px solid var(--border); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #222733; color: var(--muted); }
+.badge.warn { background: #3a2f12; color: var(--warn); }
+.muted { color: var(--muted); font-size: 13px; }

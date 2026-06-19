@@ -1,0 +1,19 @@
+# Secrets — never commit
+.env
+.env.local
+*.pem
+*.key
+
+gateway/gateway
+/tmp/
+*.log
+
+# Python (api/)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node / Next (frontend/)
+node_modules/
+.next/
