@@ -1,0 +1,89 @@
+# Reference: Cross-Repo OEE Validation Workflow
+
+**Purpose:** Wire `factory-digital-twin/oee_calculator/validator.py` into CI so
+FactoryOps dashboard OEE stays aligned with Twin ground truth.
+
+**Status:** Reference template — not active in any repo yet. Copy relevant jobs
+into `factory-ops/.github/workflows/` when prioritized (see [`../plan.md`](../plan.md) M3).
+
+**Replaces:** Prior draft `cicd.yml` in this folder, which described an out-of-scope
+VLA/LoRA/Isaac Sim pipeline. That content violated portfolio guardrails (no embedded
+systems, no deep-learning training pipelines, no AutoML).
+
+---
+
+```yaml
+name: Portfolio OEE Validation
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'gateway/**'
+      - 'api/**'
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  oee-validator:
+    name: Twin ground truth vs FactoryOps OEE
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout FactoryOps
+        uses: actions/checkout@v4
+
+      - name: Checkout Digital Twin (sibling)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/factory-digital-twin
+          path: factory-digital-twin
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate seed-42 events
+        working-directory: factory-digital-twin
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python run.py --out /tmp/events.jsonl --seed 42
+
+      - name: Run OEE validator
+        working-directory: factory-digital-twin
+        run: |
+          python -c "
+          import json
+          from oee_calculator.validator import validate
+          from oee_calculator.oee_engine import compute_oee
+
+          events = [json.loads(l) for l in open('/tmp/events.jsonl')]
+          # Replace with FactoryOps API response or SQL export when wired
+          reported = compute_oee(events, horizon_s=86400)
+          ok, problems = validate(events, 86400, reported)
+          assert ok, problems
+          print('OEE validation passed')
+          "
+
+      - name: Lint (FactoryOps API)
+        working-directory: api
+        run: |
+          pip install ruff
+          ruff check --select E9,F63,F7,F82 .
+```
+
+---
+
+## Local equivalent
+
+```bash
+cd factory-digital-twin
+python run.py --out /tmp/events.jsonl --seed 42
+python run.py --oee   # print ground-truth OEE
+
+# Compare against FactoryOps API (with stack running):
+curl -s "http://localhost:8010/metrics/oee?line_id=line-1&horizon_s=86400"
+```
+
+Tolerance and full wiring: see `oee_calculator/validator.py` docstring.

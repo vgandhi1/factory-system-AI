@@ -1,0 +1,14 @@
+# Independent sub-repos — each is its own git repository, tracked separately.
+# (factory-digital-twin / factory-ops / visionguard have no remote yet;
+#  factory-genius is published standalone. Convert to submodules once all are pushed.)
+/factory-digital-twin/
+/factory-ops/
+/visionguard/
+/factory-genius/
+
+# Local tooling / caches
+.ruff_cache/
+.claude/settings.local.json
+__pycache__/
+*.pyc
+.DS_Store
