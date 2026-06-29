@@ -1,7 +1,7 @@
 # Factory AI Portfolio — Guardrails Summary
 
 **Canonical source:**
-[`governance/Guardrails/specialized/factory-portfolio/factory-ai-portfolio-guardrails.md`](../../governance/Guardrails/specialized/factory-portfolio/factory-ai-portfolio-guardrails.md)
+`governance/Guardrails/specialized/factory-portfolio/factory-ai-portfolio-guardrails.md`
 
 This file is a quick reference for day-to-day work. When in doubt, the governance
 document wins.
@@ -78,12 +78,12 @@ Copy into each repo root as `CLAUDE.md` before agent sessions:
 
 | Project | Config |
 |---------|--------|
-| FactoryOps | [`project-configs/CLAUDE-factoryops.md`](../../governance/Guardrails/specialized/factory-portfolio/project-configs/CLAUDE-factoryops.md) |
-| VisionGuard | [`project-configs/CLAUDE-visionguard.md`](../../governance/Guardrails/specialized/factory-portfolio/project-configs/CLAUDE-visionguard.md) |
-| Digital Twin | [`project-configs/CLAUDE-digitaltwin.md`](../../governance/Guardrails/specialized/factory-portfolio/project-configs/CLAUDE-digitaltwin.md) |
+| FactoryOps | `project-configs/CLAUDE-factoryops.md` |
+| VisionGuard | `project-configs/CLAUDE-visionguard.md` |
+| Digital Twin | `project-configs/CLAUDE-digitaltwin.md` |
 
 ---
 
 ## Repo hygiene
 
-Each sub-repo follows [`governance/standards/COMPLIANCE.md`](../../governance/standards/COMPLIANCE.md) independently. Current tier: **T1 Dev**.
+Each sub-repo follows [`governance/standards/COMPLIANCE.md`](https://github.com/vgandhi1/standards/blob/main/COMPLIANCE.md) independently. Current tier: **T1 Dev**.

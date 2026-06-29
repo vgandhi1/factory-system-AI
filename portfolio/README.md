@@ -31,7 +31,7 @@ Coordination docs for the three-repo manufacturing-AI portfolio. This folder is
 ## CI and validation
 
 Each sub-repo ships its own `.github/workflows/test.yml` per
-[`governance/standards/06-REQUIRED-FILES.md`](../../governance/standards/06-REQUIRED-FILES.md).
+[`governance/standards/06-REQUIRED-FILES.md`](https://github.com/vgandhi1/standards/blob/main/06-REQUIRED-FILES.md).
 
 Cross-repo OEE validation (Twin ground truth vs FactoryOps dashboard) is documented
 in [`ci/portfolio-validator.yml`](ci/portfolio-validator.yml) — wire this into

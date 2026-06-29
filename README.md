@@ -31,7 +31,7 @@
 
 > **Separate experiment:** [`factory-genius`](https://github.com/vgandhi1/factory-genius) — maintenance copilot in its own repo · **not** part of the three-repo integration story.
 
-Each sub-repo is an **independent git repository** and follows [governance standards](../governance/standards/COMPLIANCE.md) on its own.
+Each sub-repo is an **independent git repository** and follows [governance standards](https://github.com/vgandhi1/standards/blob/main/COMPLIANCE.md) on its own.
 
 ---
 
@@ -81,9 +81,9 @@ flowchart LR
 
 ## Governance
 
-- [Factory portfolio guardrails](../governance/Guardrails/specialized/factory-portfolio/factory-ai-portfolio-guardrails.md)
-- [Repo hygiene standards](../governance/standards/COMPLIANCE.md)
-- [Per-project CLAUDE configs](../governance/Guardrails/specialized/factory-portfolio/project-configs/)
+- Factory portfolio guardrails
+- [Repo hygiene standards](https://github.com/vgandhi1/standards/blob/main/COMPLIANCE.md)
+- Per-project CLAUDE configs
 
 ---
 

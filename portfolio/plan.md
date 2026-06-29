@@ -44,7 +44,7 @@ learns from inspector corrections. All runnable locally with one demo script.
 ### In scope (this portfolio)
 
 Aligned with [`GUARDRAILS.md`](GUARDRAILS.md) and
-[`factory-ai-portfolio-guardrails.md`](../../governance/Guardrails/specialized/factory-portfolio/factory-ai-portfolio-guardrails.md):
+`factory-ai-portfolio-guardrails.md`:
 
 - Synthetic MES events via NATS (`factory.production`, `.downtime`, `.quality`)
 - OEE calculation, downtime classification, bottleneck identification (FactoryOps)
